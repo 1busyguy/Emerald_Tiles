@@ -41,8 +41,8 @@ const App: React.FC = () => {
         rendererRef.current = renderer;
         renderer.setSize(window.innerWidth, window.innerHeight);
         // Adjust the camera position for a 3D view
-        camera.position.set(5, 5, 10);
-        camera.lookAt(0, 0, 0);
+          camera.position.set(5, 5, 10);
+         camera.lookAt(0, 0, 0);
           const levelSize = 2;
        const initialPositions: TileData[] = [];
        const currentLevelData = LEVELS.find(level => level.levelNumber === currentLevel);
