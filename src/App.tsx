@@ -3,21 +3,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import Tile from './components/Tile';
 import TileSelector from './components/TileSelector';
-import Timer from './components/Timer';
 import { generateRandomTiles, createMarbleMesh, createTileMesh } from './utils/gameUtils';
-import { INITIAL_TIMER, TILE_SIZE } from './utils/constants';
+import { TILE_SIZE } from './utils/constants';
 import { TileData } from './models/TileData';
 import GameOverModal from './components/GameOverModal';
 import { v4 as uuidv4 } from 'uuid';
 import coinImage from '/assets/images/coin.png';
 import { LEVELS } from './utils/levels';
-
+import { TILE_TYPES } from './utils/constants';
 
 const App: React.FC = () => {
   const [tiles, setTiles] = useState<TileData[]>([]);
   const [availableTiles, setAvailableTiles] = useState<TileData[]>([]);
-  const [isTimerRunning, setIsTimerRunning] = useState(true);
-  const [timer, setTimer] = useState(30); // Initialize timer to 30
   const [availablePositions, setAvailablePositions] = useState<TileData[]>([]);
   const [currentLevel, setCurrentLevel] = useState(1);
   const [gameOver, setGameOver] = useState(false);
@@ -31,102 +28,84 @@ const App: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
 
-  useEffect(() => {
-    if (gameOver) {
-      return;
-    }
-    const scene = new THREE.Scene();
-    const aspectRatio = window.innerWidth / window.innerHeight;
-    const camera = new THREE.OrthographicCamera(-5 * aspectRatio, 5 * aspectRatio, 5, -5, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! });
-    sceneRef.current = scene;
-    cameraRef.current = camera;
-    rendererRef.current = renderer;
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    // Adjust the camera position for a 3D view
-    camera.position.set(8, 8, 12);
-    camera.lookAt(0, 0, 0);
-    const levelSize = 2;
-    const initialPositions: TileData[] = [];
-        const currentLevelData = LEVELS.find(level => level.levelNumber === currentLevel);
-        if(!currentLevelData) return;
-      const generatedTiles = currentLevelData.tiles;
-        setTiles(generatedTiles);
-        const {x,y} = currentLevelData.startPosition;
-
-    //Create Line outlines to show available positions.
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x808080 }); // Gray
-    for (let x = -levelSize; x <= levelSize; x++) {
-      for (let y = -levelSize; y <= levelSize; y++) {
-        if (x === 0 && y === 0) {
-          continue;
+    useEffect(() => {
+        if(gameOver) {
+            return;
         }
-        let newTilePosition = { id: uuidv4(), type: '', speed: 0, x, y, rotation: 0 };
-        initialPositions.push(newTilePosition);
-        // Create vertices for the outline of the tile
-        const points = [];
-        points.push(new THREE.Vector3(x - TILE_SIZE / 2, y - TILE_SIZE / 2, 0.1));
-        points.push(new THREE.Vector3(x + TILE_SIZE / 2, y - TILE_SIZE / 2, 0.1));
-        points.push(new THREE.Vector3(x + TILE_SIZE / 2, y + TILE_SIZE / 2, 0.1));
-        points.push(new THREE.Vector3(x - TILE_SIZE / 2, y + TILE_SIZE / 2, 0.1));
-        points.push(new THREE.Vector3(x - TILE_SIZE / 2, y - TILE_SIZE / 2, 0.1));
-
-        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-        const line = new THREE.Line(lineGeometry, lineMaterial);
-        scene.add(line);
-      }
-    }
-
-    setAvailablePositions(initialPositions);
-    generatedTiles.forEach((tile) => {
-      const tileMesh = createTileMesh(tile);
-      scene.add(tileMesh);
-    });
-    const marbleMesh = createMarbleMesh(x, y);
-     marbleMesh.position.z = 1; // Initial z-position above tiles
-    setMarble(marbleMesh);
-     scene.add(marbleMesh);
-     setFloatingMarblePosition(marbleMesh.position);
-    const animate = () => {
-      if (gameOver) return;
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-       if (isTimerRunning){
-         floatMarble()
-      } else if(!isTimerRunning){
-          if(marble && marble.position.z > 0.2) {
-            marble.position.z -= 0.05
-          } else {
-           marbleMovement()
+        const scene = new THREE.Scene();
+        const aspectRatio = window.innerWidth/ window.innerHeight;
+        const camera = new THREE.OrthographicCamera(-5 * aspectRatio, 5 * aspectRatio, 5, -5, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current!});
+        sceneRef.current = scene;
+        cameraRef.current = camera;
+        rendererRef.current = renderer;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // Adjust the camera position for a 3D view
+        camera.position.set(8, 8, 12);
+        camera.lookAt(0, 0, 0);
+          const levelSize = 2;
+       const initialPositions: TileData[] = [];
+       const currentLevelData = LEVELS.find(level => level.levelNumber === currentLevel);
+       if(!currentLevelData) return;
+          const generatedTiles: TileData[] = []
+        for (let x = -levelSize; x <= levelSize; x++) {
+         for (let y = -levelSize; y <= levelSize; y++) {
+            if (x === 0 && y === 0) {
+               continue;
           }
+          const randomTypeIndex = Math.floor(Math.random() * TILE_TYPES.length);
+            const type = TILE_TYPES[randomTypeIndex];
+             const rotation = Math.floor(Math.random() * 4) * (Math.PI / 2);
+              let newTilePosition = { id: uuidv4(), type, speed: 4, x, y, rotation };
+          initialPositions.push(newTilePosition);
+         generatedTiles.push(newTilePosition)
+        }
        }
-    };
-    animate();
-    return () => {
-      renderer.dispose();
-    };
-  }, [currentLevel, gameOver, isTimerRunning]);
+       setTiles(generatedTiles);
+      setAvailablePositions(initialPositions)
+
+         generatedTiles.forEach((tile) => {
+         const tileMesh =  createTileMesh(tile)
+           scene.add(tileMesh);
+      });
+
+          const {x,y} = currentLevelData.startPosition;
+     const marbleMesh = createMarbleMesh(x, y);
+        marbleMesh.position.z = 1; // Initial z-position above tiles
+      setMarble(marbleMesh);
+        scene.add(marbleMesh);
+        setFloatingMarblePosition(marbleMesh.position);
+    const animate = () => {
+         if (gameOver) return;
+           renderer.render(scene, camera)
+             requestAnimationFrame(animate)
+          if(marble && marble.position.z > 0.2) {
+             marble.position.z -= 0.05
+           } else {
+            marbleMovement()
+           }
+       };
+       animate()
+        return () => {
+           renderer.dispose()
+         };
+  }, [currentLevel, gameOver]);
 
 
-  const floatMarble = () => {
-    if(marble && floatingMarblePosition){
+
+     const floatMarble = () => {
+      if(marble && floatingMarblePosition){
         let floatingSpeed = 0.02
-       const newZ = floatingMarblePosition.z + Math.sin(Date.now() / 200) * floatingSpeed
-        marble.position.z = newZ;
+        const newZ = floatingMarblePosition.z + Math.sin(Date.now() / 200) * floatingSpeed
+         marble.position.z = newZ;
+         }
     }
-}
-
-
-  const handleTimerEnd = () => {
-    setIsTimerRunning(false);
-      setAvailableTiles(generateRandomTiles(currentLevel));
-  };
 
   const handleTileRotate = (id: string) => {
     setTiles((prevTiles) =>
       prevTiles.map((tile) => {
         if (tile.id === id) {
-          const newRotation = tile.rotation + Math.PI / 2;
+          const newRotation = tile.rotation + Math.PI / 4;
           return { ...tile, rotation: newRotation };
         }
         return tile;
@@ -135,18 +114,18 @@ const App: React.FC = () => {
     if (sceneRef.current) {
       sceneRef.current.children.forEach((mesh) => {
         if ((mesh as THREE.Mesh).geometry instanceof THREE.PlaneGeometry && mesh.name === id) {
-          mesh.rotation.z = mesh.rotation.z + Math.PI / 2;
+          mesh.rotation.z = mesh.rotation.z + Math.PI / 4;
         }
       });
     }
   };
 
   const handleTileSelect = (tile: TileData) => {
-    setSelectedTile(tile);
+     setSelectedTile(tile);
   };
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!selectedTile || isTimerRunning) return;
+   if (!selectedTile) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -175,8 +154,6 @@ const App: React.FC = () => {
   const handleRestart = () => {
     setGameOver(false);
     setCurrentLevel(1);
-    setIsTimerRunning(true);
-    setTimer(30); // Reset timer to 30
     setTiles([]);
   };
 
@@ -186,8 +163,8 @@ const App: React.FC = () => {
     if (tiles && tiles.length > 0) {
       let minDistance = Number.MAX_VALUE;
       tiles.forEach((tile) => {
-        const dx = marble.position.x - tile.x;
-        const dy = marble.position.y - tile.y;
+        const dx = marble.position.x - (tile?.x || 0);
+        const dy = marble.position.y - (tile?.y || 0);
         const distance = Math.sqrt(dx * dx + dy * dy);
         if (distance < minDistance) {
           minDistance = distance;
@@ -227,7 +204,7 @@ const App: React.FC = () => {
   };
 
   const isValidDropPosition = (dropPosition: { x: number; y: number }) => {
-    return availablePositions.some((position) => position.x === dropPosition.x && position.y === dropPosition.y);
+     return availablePositions.some((position) => position.x === dropPosition.x && position.y === dropPosition.y);
   };
 
   return (
@@ -235,11 +212,6 @@ const App: React.FC = () => {
       <div className="w-full p-4 border-4 border-green-500">
         <header className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-left">Emerald Tiles</h1>
-          <div className="flex items-center justify-center">
-            <span className="text-2xl font-bold text-black border border-gray-500 p-1 rounded-sm">
-              {isTimerRunning && <Timer initialTime={timer} onTimerEnd={handleTimerEnd} />}
-            </span>
-          </div>
           <div className="flex items-center">
             <span className="mr-2">
               <img src={coinImage} alt="Golden Coin" className="w-6 h-6" />
@@ -247,10 +219,10 @@ const App: React.FC = () => {
             <span>{coins}</span>
           </div>
         </header>
+          <div className="flex justify-center items-center mb-4">
+          </div>
         <canvas ref={canvasRef} className="border border-gray-300 my-4" onClick={handleCanvasClick} />
-        {isTimerRunning ? null : (
-          <TileSelector availableTiles={availableTiles} onTileSelect={handleTileSelect} />
-        )}
+         <TileSelector availableTiles={availableTiles} onTileSelect={handleTileSelect} />
         <div className="grid grid-cols-5 gap-2">
           {tiles.map((tile) => (
             <Tile key={tile.id} tileData={tile} onRotate={handleTileRotate} />
