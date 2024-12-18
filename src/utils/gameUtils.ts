@@ -9,10 +9,7 @@ export function createTileMesh(tileData: TileData): THREE.Mesh {
     const tileTexture = new THREE.TextureLoader().load(`/assets/images/${tileData.type}.png`)
     const tileMaterial = new THREE.MeshBasicMaterial({map: tileTexture});
     const tileMesh = new THREE.Mesh(tileGeometry, tileMaterial);
-     tileMesh.rotation.z = tileData.rotation;
-       // Calculate scale based on position, larger on the bottom and smaller on the top.
-    const scale = 1 - (tileData.y / 10);
-    tileMesh.scale.set(scale, scale, scale);
+    tileMesh.rotation.z = tileData.rotation;
     tileMesh.position.set(tileData.x, tileData.y, 0);
     return tileMesh;
 }
