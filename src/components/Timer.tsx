@@ -21,7 +21,7 @@ const Timer: React.FC<TimerProps> = ({ initialTime, onTimerEnd }) => {
     }
   }, [time, onTimerEnd]);
 
-  return <div className="text-2xl">{time}</div>;
+  return <div className="text-4xl font-bold text-black">{time}</div>;
 };
 
 export default Timer;
