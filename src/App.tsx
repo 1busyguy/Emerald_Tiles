@@ -34,15 +34,15 @@ const App: React.FC = () => {
         }
         const scene = new THREE.Scene();
         const aspectRatio = window.innerWidth/ window.innerHeight;
-        const camera = new THREE.OrthographicCamera(-5 * aspectRatio, 5 * aspectRatio, 5, -5, 0.1, 1000);
+      const camera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current!});
         sceneRef.current = scene;
         cameraRef.current = camera;
         rendererRef.current = renderer;
         renderer.setSize(window.innerWidth, window.innerHeight);
         // Adjust the camera position for a 3D view
-          camera.position.set(0, 0, 10);
-          camera.lookAt(0, 0, 0);
+        camera.position.set(0, 0, 10);
+        camera.lookAt(0, 0, 0);
           const levelSize = 2;
        const initialPositions: TileData[] = [];
        const currentLevelData = LEVELS.find(level => level.levelNumber === currentLevel);
@@ -50,9 +50,6 @@ const App: React.FC = () => {
           const generatedTiles: TileData[] = []
         for (let x = -levelSize; x <= levelSize; x++) {
          for (let y = -levelSize; y <= levelSize; y++) {
-            if (x === 0 && y === 0) {
-               continue;
-          }
           const randomTypeIndex = Math.floor(Math.random() * TILE_TYPES.length);
             const type = TILE_TYPES[randomTypeIndex];
              const rotation = Math.floor(Math.random() * 4) * (Math.PI / 2);
