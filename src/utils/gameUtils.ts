@@ -11,33 +11,7 @@ export function createTileMesh(tileData: TileData): THREE.Mesh {
     const tileMesh = new THREE.Mesh(tileGeometry, tileMaterial);
     tileMesh.rotation.z = tileData.rotation;
     tileMesh.position.set(tileData.x, tileData.y, 0);
-      // create a canvas to draw the line
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-         canvas.height = 256;
-        const context = canvas.getContext('2d')
-       if(context){
-         context.clearRect(0,0, canvas.width, canvas.height) //clear the previous rendering
-           context.lineWidth = 10;
-            context.strokeStyle = 'black';
-             context.beginPath();
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-           if (tileData.pathType === 'straight') {
-             context.moveTo(centerX, 0);
-               context.lineTo(centerX, canvas.height);
-           } else if (tileData.pathType === 'curve') {
-               context.moveTo(centerX,0);
-             context.bezierCurveTo(canvas.width, 0, canvas.width, canvas.height, canvas.width, centerY)
-            }
-             context.stroke();
-              const texture = new THREE.CanvasTexture(canvas);
-           const pathMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true })
-          const pathPlane = new THREE.Mesh(tileGeometry, pathMaterial);
-         pathPlane.position.set(tileData.x, tileData.y, 0.1)
-           tileMesh.add(pathPlane);
-        }
-        return tileMesh;
+    return tileMesh;
 }
 
   export function createMarbleMesh(x: number, y: number): THREE.Mesh {
@@ -58,7 +32,6 @@ export function generateRandomTiles(currentLevel: number): TileData[] {
     const randomTypeIndex = Math.floor(Math.random() * TILE_TYPES.length);
     const type = TILE_TYPES[randomTypeIndex];
     const rotation = Math.floor(Math.random() * 4) * (Math.PI / 2);
-    const pathType = Math.floor(Math.random() * 2) === 0 ? 'straight' : 'curve'
       tiles.push({
         id: uuidv4(),
         type,
@@ -66,7 +39,6 @@ export function generateRandomTiles(currentLevel: number): TileData[] {
           rotation,
         x,
         y,
-        pathType
       });
     }
   return tiles;

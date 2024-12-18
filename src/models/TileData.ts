@@ -6,5 +6,4 @@ export interface TileData {
   rotation: number;
   x: number;
   y: number;
-  pathType: 'straight' | 'curve';
 }
