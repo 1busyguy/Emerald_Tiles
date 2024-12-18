@@ -1,7 +1,7 @@
 // src/utils/gameUtils.ts
 import * as THREE from 'three';
-import { TILE_SIZE, TILE_SPEEDS, TILE_TYPES, MARBLE_RADIUS } from './constants';
-import { TileData } from '../models/TileData';
+import { TILE_SIZE, TILE_SPEEDS, TILE_TYPES, MARBLE_RADIUS } from "./utils/constants";
+import { TileData } from './models/TileData';
 import { v4 as uuidv4 } from 'uuid';
 
 export function createTileMesh(tileData: TileData): THREE.Mesh {
