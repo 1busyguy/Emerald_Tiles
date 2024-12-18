@@ -9,7 +9,7 @@ import { INITIAL_TIMER, TILE_SIZE } from './utils/constants';
 import { TileData } from './models/TileData';
 import GameOverModal from './components/GameOverModal';
 import { v4 as uuidv4 } from 'uuid';
-import coinImage from '../public/assets/images/coin.png';
+import coinImage from '/assets/images/coin.png';
 
 const App: React.FC = () => {
   const [tiles, setTiles] = useState<TileData[]>([]);
