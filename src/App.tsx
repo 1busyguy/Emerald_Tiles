@@ -41,8 +41,8 @@ const App: React.FC = () => {
         rendererRef.current = renderer;
         renderer.setSize(window.innerWidth, window.innerHeight);
         // Adjust the camera position for a 3D view
-        camera.position.set(8, 8, 12);
-        camera.lookAt(0, 0, 0);
+           camera.position.set(10, 10, 12);
+            camera.lookAt(0, 0, 0);
           const levelSize = 2;
        const initialPositions: TileData[] = [];
        const currentLevelData = LEVELS.find(level => level.levelNumber === currentLevel);
@@ -56,7 +56,9 @@ const App: React.FC = () => {
           const randomTypeIndex = Math.floor(Math.random() * TILE_TYPES.length);
             const type = TILE_TYPES[randomTypeIndex];
              const rotation = Math.floor(Math.random() * 4) * (Math.PI / 2);
-              let newTilePosition = { id: uuidv4(), type, speed: 4, x, y, rotation };
+            const isoX = (x - y) * (TILE_SIZE / 2);
+              const isoY = (x + y) * (TILE_SIZE / 4);
+              let newTilePosition = { id: uuidv4(), type, speed: 4, x: isoX, y: isoY, rotation };
           initialPositions.push(newTilePosition);
          generatedTiles.push(newTilePosition)
         }
@@ -159,7 +161,7 @@ const App: React.FC = () => {
 
   const marbleMovement = () => {
     if (!marble || !sceneRef.current) return;
-    let currentTile;
+    let currentTile: TileData | undefined;
     if (tiles && tiles.length > 0) {
       let minDistance = Number.MAX_VALUE;
       tiles.forEach((tile) => {
@@ -173,15 +175,16 @@ const App: React.FC = () => {
       });
     }
     if (!currentTile) return;
-    const nextX = currentTile.x;
-    const nextY = currentTile.y;
-    const speed = currentTile.speed / 20;
+    const {x,y, speed} = currentTile || {x:0, y:0, speed:1};
+    const nextX = x;
+    const nextY = y;
+    const tileSpeed = (speed || 1) / 20;
     const dx = nextX - marble.position.x;
     const dy = nextY - marble.position.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     if (distance > 0.1) {
-      marble.position.x += (dx / distance) * speed;
-      marble.position.y += (dy / distance) * speed;
+      marble.position.x += (dx / distance) * tileSpeed;
+      marble.position.y += (dy / distance) * tileSpeed;
     }
     if (marble.position.y < -5) {
       setGameOver(true);
@@ -194,18 +197,18 @@ const App: React.FC = () => {
     const newY = Math.round(dropPosition.y);
     if (isValidDropPosition({ x: newX, y: newY })) {
       setTiles((prevTiles) => [...prevTiles, { ...selectedTile, x: newX, y: newY }]);
-      setAvailableTiles((prevTiles) => prevTiles.filter((tile) => tile.id !== selectedTile.id));
-      setAvailablePositions((prevPositions) => prevPositions.filter((position) => position.x !== newX || position.y !== newY));
-      if (sceneRef.current) {
-        const tileMesh = createTileMesh({ ...selectedTile, x: newX, y: newY });
-        sceneRef.current.add(tileMesh);
+        setAvailableTiles((prevTiles) => prevTiles.filter((tile) => tile.id !== selectedTile.id));
+         setAvailablePositions((prevPositions) => prevPositions.filter((position) => position.x !== newX || position.y !== newY));
+        if (sceneRef.current) {
+         const tileMesh = createTileMesh({ ...selectedTile, x: newX, y: newY });
+          sceneRef.current.add(tileMesh);
       }
     }
   };
 
   const isValidDropPosition = (dropPosition: { x: number; y: number }) => {
      return availablePositions.some((position) => position.x === dropPosition.x && position.y === dropPosition.y);
-  };
+    };
 
   return (
     <div className="flex flex-col items-center w-full">
